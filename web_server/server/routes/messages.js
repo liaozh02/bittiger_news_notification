@@ -44,7 +44,8 @@ router.post('/userId/:userId', function(req, res, next) {
 router.get('/received/userId/:userId', function(req, res, next) {
     const userId = req.params.userId;
     console.log(userId);
-    db.query(`CREATE TEMPORARY TABLE userRecords 
+    db.query(`DROP TEMPORARY TABLE IF EXISTS userRecords;
+              CREATE TEMPORARY TABLE userRecords 
               SELECT * FROM msgRecords WHERE recId = ?;
               SELECT msgs.id,msgs.title, msgs.text, msgs.sendTime, 
               msgs.tag, msgs.createdById, userRecords.status,
@@ -54,15 +55,18 @@ router.get('/received/userId/:userId', function(req, res, next) {
               ORDER BY msgs.sendTime DESC;`,
               [userId], (error, results, fields) => {
                     if(error) {
+                        console.log(error);
                         res.status(400).end();
                     }
                     var jsonList = [];
-                    for(var i in results[1]) {
-                        result = results[1][i]
-                        result = JSON.stringify(result);
-                        result = JSON.parse(result);
-                        console.log(result);
-                        jsonList.push(result);
+                    if(results) {
+                        for(var i in results[2]) {
+                            result = results[2][i]
+                            result = JSON.stringify(result);
+                            result = JSON.parse(result);
+                            console.log(result);
+                            jsonList.push(result);
+                        }
                     }
                     
                     res.status(200).json(jsonList);
